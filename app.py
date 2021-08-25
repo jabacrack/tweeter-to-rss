@@ -43,7 +43,7 @@ def index(name, amount):
     return generate_rss(escape(name), escape(amount))
 
 
-if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=8080, debug=True)
-    # rss = generate_rss("Mikeinelart", 20)
+# if __name__ == "__main__":
+#     app.run(host="127.0.0.1", port=8080, debug=True)
+#     # rss = generate_rss("Mikeinelart", 20)
 
