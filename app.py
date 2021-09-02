@@ -7,9 +7,9 @@ app = Flask(__name__)
 
 
 def generate_content(text, pictures, source_link):
-    pictures = [f'<img src={x}/>' for x in pictures]
+    pictures = [f'<img src="{x}" />' for x in pictures]
     pictures = "<br/>".join(pictures)
-    source = f'<a href={source_link} target="_blank">source</a>'
+    source = f'<a href="{source_link}" target="_blank">source</a>'
     content = f'{text}<br/>{pictures}<br/>{source}'
     return content
 
