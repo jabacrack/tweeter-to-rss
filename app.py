@@ -2,14 +2,53 @@ import twint
 from feedgen.feed import FeedGenerator
 from flask import Flask, Response
 from markupsafe import escape
+from urllib.parse import urlparse
 
 app = Flask(__name__)
+image_exts = (".jpg", ".jpeg", ".png", ".gif")
 
 
-def generate_content(text, pictures, source_link):
-    pictures = [f'<img src="{x}" />' for x in pictures]
+def is_youtube(url):
+    parts = urlparse(url)
+    netloc = parts.netloc.removeprefix("www.")
+    # return url.startswith(("youtu.be", "youtube.com"))
+    return netloc.startswith("youtu.be")
+
+
+def is_image(url):
+    return url.endswith(image_exts)
+
+
+def embed_url(url, title):
+    return f'<a href="{url}"  target="_blank">{title}</a>'
+
+
+def embed_picture(url):
+    return f'<img src="{url}" />'
+
+
+def embed_youtube(url):
+    parts = url.split("/")
+    code = parts[1]
+    return f'<iframe width="480" height="270" src="https://www.youtube.com/embed/{code}" title="YouTube video player" ' \
+           f'frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; ' \
+           f'picture-in-picture" allowfullscreen></iframe> '
+
+
+def generate_content(text, pictures, urls, source_link):
+    pictures = [embed_picture(x) for x in pictures]
+    unknown_urls = []
+    for url in urls:
+
+        if is_image(url):
+            pictures.append(embed_picture(url))
+        elif is_youtube(url):
+            pictures.append(embed_youtube(url))
+        else:
+            unknown_urls.append(embed_url(url, url))
+    pictures.extend(unknown_urls)
     pictures = "<br/>".join(pictures)
-    source = f'<a href="{source_link}" target="_blank">source</a>'
+    source = embed_url(source_link, "source")
     content = f'{text}<br/>{pictures}<br/>{source}'
     return content
 
@@ -30,7 +69,7 @@ def generate_rss(user, amount):
     fg.link(href=f'https://twitter.com/{user}', rel='alternate')
     fg.description(f'Tweets feed for {user}')
     for tweet in tweets:
-        content = generate_content(tweet.tweet, tweet.photos, tweet.link)
+        content = generate_content(tweet.tweet, tweet.photos, tweet.urls, tweet.link)
 
         entry = fg.add_entry()
         entry.guid(guid=tweet.link, permalink=True)
@@ -46,7 +85,5 @@ def index(name, amount):
     return Response(xml, mimetype='text/xml')
 
 
-# if __name__ == "__main__":
-#     app.run(host="127.0.0.1", port=8080, debug=True)
-#     # rss = generate_rss("Mikeinelart", 20)
-
+if __name__ == "__main__":
+    rss = generate_rss("Mikeinelart", 20)

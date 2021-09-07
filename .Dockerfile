@@ -1,15 +1,10 @@
 # syntax=docker/dockerfile:1
 
-FROM python:3.6-slim-buster
+FROM jabacrack/flask-and-twint:1.1
 
 WORKDIR /app
 
-COPY requirements.txt requirements.txt
 COPY app.py .
-COPY twint/twint twint/
-COPY twint/requirements.txt requirements2.txt
-RUN pip3 install -r requirements.txt
-RUN pip3 install -r requirements2.txt
 
 EXPOSE 80
 
